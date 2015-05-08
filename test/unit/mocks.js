@@ -37,6 +37,7 @@ var loggerEnabled = false;
 
 //noinspection JSUnusedGlobalSymbols
 var logger = {
+    messages: [],
     enable: function (enabled) {
         loggerEnabled = enabled === undefined ? true : enabled;
     },
@@ -52,6 +53,7 @@ var logger = {
 
 function log(level) {
     return function () {
+        logger.messages.push(Array.prototype.slice.call(arguments));
         if (loggerEnabled) {
             console[level].apply(console, arguments);
         }

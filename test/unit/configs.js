@@ -113,6 +113,13 @@ var configs = {
                 .pipe(buffer())
                 .pipe(dest());
         };
+    },
+    errorInStream: function (src, dest) {
+        src()
+            .pipe(through.obj(function () {
+                throw new Error('Watch out for snakes!');
+            }))
+            .pipe(dest());
     }
 };
 
