@@ -1,0 +1,9 @@
+/.idea
+*.iml
+
+/test
+/coverage
+/node_modules
+/.travis.yml
+/.jshintignore
+/.jshintrc

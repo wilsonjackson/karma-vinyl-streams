@@ -12,7 +12,7 @@ var buffer = require('vinyl-buffer');
 module.exports = function (config) {
     require('./karma.conf')(config);
 
-    var tmpFile = path.join(os.tmpdir(), hat() + '.watchify');
+    var tmpFile = path.join(os.tmpdir(), hat() + '.browserify');
     var b = watchify(browserify({
         entries: [path.join(__dirname, 'browserify/main.js')],
         cache: {},

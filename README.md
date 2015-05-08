@@ -70,7 +70,17 @@ unlike gulp, which will kick off each stream immediately when you ask for it and
 Also, `src` will not load arbitrary files from the filesystem; they must be specified in Karma's
 `files` config. Or you can pipe in your own stream of files to `src`.
 
-## Sourcemaps with `karma-source-map-support` and `gulp-sourcemaps`
+## Recipes
+
+### browserify
+
+See the [browserify integration test](test/integration/karma.browserify.conf.js) for an example config.
+
+### TypeScript
+
+See the [TypeScript integration test](test/integration/karma.typescript.conf.js) for an example config.
+
+### Sourcemaps with `karma-source-map-support` and `gulp-sourcemaps`
 
 'Cause not having real line numbers is a drag.
 
