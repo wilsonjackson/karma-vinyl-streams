@@ -119,7 +119,7 @@ describe('karma-vinyl-streams', function () {
                     {path: '/base/sample.js', content: 'contents appended'}
                 ]);
                 done();
-            });
+            }).catch(done);
         });
 
         it('should handle extra files in output file array', function (done) {
@@ -137,7 +137,7 @@ describe('karma-vinyl-streams', function () {
                     {path: '/base/new-file-4.js', content: 'added'}
                 ]);
                 done();
-            });
+            }).catch(done);
         });
 
         it('should handle missing files in output file array', function (done) {
@@ -152,7 +152,7 @@ describe('karma-vinyl-streams', function () {
                     {path: '/base/file1.js', content: 'file1'}
                 ]);
                 done();
-            });
+            }).catch(done);
         });
 
         it('should filter processed files by a path pattern', function (done) {
@@ -171,7 +171,7 @@ describe('karma-vinyl-streams', function () {
                     {path: '/base/subdir/file4.js', content: 'file4 appended'}
                 ]);
                 done();
-            });
+            }).catch(done);
         });
 
         it('should filter processed files by multiple path patterns', function (done) {
@@ -190,7 +190,7 @@ describe('karma-vinyl-streams', function () {
                     {path: '/base/file4.js', content: 'file4 appended'}
                 ]);
                 done();
-            });
+            }).catch(done);
         });
 
         it('should process an existing vinyl stream and add its contents to Karma', function (done) {
@@ -205,7 +205,25 @@ describe('karma-vinyl-streams', function () {
                     {path: '/base/external.html', content: 'external file\n'}
                 ]);
                 done();
-            });
+            }).catch(done);
+        });
+
+        it('should count all files as modified on the first invocation', function (done) {
+            var file1 = createFile('/base/file1.js', 'file1');
+            var file2 = createFile('/base/subdir/file2.js', 'file2');
+            var file3 = createFile('/base/file3.html', 'file3');
+            var files = {served: [file1, file2, file3], included: [file1, file2, file3]};
+
+            var pipeline = pipelineFactory(basePath, mocks.logger, configs.appendToModified);
+            pipeline(files, [], []).then(function () {
+                //expect(configs.appendToModified.count).to.equal(3);
+                expect(files).to.have.pipelineResult([
+                    {path: '/base/file1.js', content: 'file1 appended'},
+                    {path: '/base/subdir/file2.js', content: 'file2 appended'},
+                    {path: '/base/file3.html', content: 'file3 appended'}
+                ]);
+                done();
+            }).catch(done);
         });
 
         it('should allow only modified files to be processed', function (done) {
@@ -215,15 +233,18 @@ describe('karma-vinyl-streams', function () {
             var files = {served: [file1, file2, file3], included: [file1, file2, file3]};
 
             var pipeline = pipelineFactory(basePath, mocks.logger, configs.appendToModified);
-            pipeline(files, [file1.path], [file3.path]).then(function () {
-                expect(configs.appendToModified.count).to.equal(2);
-                expect(files).to.have.pipelineResult([
-                    {path: '/base/file1.js', content: 'file1 appended'},
-                    {path: '/base/subdir/file2.js', content: 'file2'},
-                    {path: '/base/file3.html', content: 'file3 appended'}
-                ]);
-                done();
-            });
+            // First (initial) invocation with no files
+            pipeline({served: [], included: []}, [], []).then(function () {
+                pipeline(files, [file1.path], [file3.path]).then(function () {
+                    expect(configs.appendToModified.count).to.equal(2);
+                    expect(files).to.have.pipelineResult([
+                        {path: '/base/file1.js', content: 'file1 appended'},
+                        {path: '/base/subdir/file2.js', content: 'file2'},
+                        {path: '/base/file3.html', content: 'file3 appended'}
+                    ]);
+                    done();
+                }).catch(done);
+            }).catch(done);
         });
 
         it('should apply multiple pipelines sequentially', function (done) {
@@ -240,7 +261,7 @@ describe('karma-vinyl-streams', function () {
                     {path: '/base/subdir/file3.html', content: 'file3 appended'}
                 ]);
                 done();
-            });
+            }).catch(done);
         });
 
         it('should handle errors in the config function gracefully', function (done) {
@@ -256,7 +277,7 @@ describe('karma-vinyl-streams', function () {
                     {path: '/base/file1.js', content: 'file1'}
                 ]);
                 done();
-            });
+            }).catch(done);
         });
 
         it('should handle errors in a pipeline gracefully', function (done) {
@@ -270,7 +291,7 @@ describe('karma-vinyl-streams', function () {
                     {path: '/base/file1.js', content: 'file1'}
                 ]);
                 done();
-            });
+            }).catch(done);
         });
     });
 });
