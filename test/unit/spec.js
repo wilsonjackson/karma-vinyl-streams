@@ -293,5 +293,26 @@ describe('karma-vinyl-streams', function () {
                 done();
             }).catch(done);
         });
+
+        it('should preserve pathname transformations', function (done) {
+            var file1 = createFile('/base/file1.js', 'file1');
+            var file2 = createFile('/base/file2.html', 'file2');
+            // First and second run use separate objects so only file object references are shared (to mimic Karma)
+            var firstRunFiles = {served: [file1, file2], included: [file1, file2]};
+            var secondRunFiles = {served: [file1, file2], included: [file1, file2]};
+
+            var pipeline = pipelineFactory(basePath, mocks.logger, configs.renameModifiedJsFiles);
+            // Initial run will rename js (all files are counted as modified)
+            pipeline(firstRunFiles, [], []).then(function () {
+                // Second run will not pass the js file through the stream, as it's not modified
+               pipeline(secondRunFiles, [], ['/base/file2.html']).then(function () {
+                   expect(firstRunFiles).to.have.pipelineResult([
+                       {path: '/base/file1.notjs', content: 'file1'},
+                       {path: '/base/file2.html', content: 'file2'}
+                   ]);
+                   done();
+               }).catch(done);
+            }).catch(done);
+        });
     });
 });

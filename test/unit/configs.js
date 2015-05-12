@@ -69,6 +69,15 @@ var configs = {
             }))
             .pipe(dest());
     },
+    renameModifiedJsFiles: function (src, dest) {
+       src.modified('*.js')
+           .pipe(through.obj(function (file, enc, done) {
+               file.path = file.path.replace('.js', '.notjs');
+               this.push(file);
+               done();
+           }))
+           .pipe(dest());
+    },
     omitAllAfterFirst: function (src, dest) {
         var pushed = false;
         src()
