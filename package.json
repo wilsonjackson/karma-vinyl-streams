@@ -1,6 +1,6 @@
 {
   "name": "karma-vinyl-streams",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Use gulp plugins instead of Karma preprocessors",
   "main": "lib/index.js",
   "scripts": {
