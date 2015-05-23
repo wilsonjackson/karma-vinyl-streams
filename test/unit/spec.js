@@ -63,11 +63,11 @@ describe('karma-vinyl-streams', function () {
                 expect(files).to.be.null;
                 expect(mockPipeline.files).to.eql([{path: '/old/file'}]);
 
-                mockPipeline.files.push({path: '/new/file'}); // Simulate some plugin doing something
-                mockPipeline.flush();
+                // Simulate some plugin doing something
+                mockPipeline.flush([{path: '/new/file'}]);
 
                 setTimeout(function () { // wait for promise
-                    expect(files).to.eql([{path: '/old/file'}, {path: '/new/file'}]);
+                    expect(files).to.eql([{path: '/new/file'}]);
                     done();
                 });
             });
@@ -113,9 +113,9 @@ describe('karma-vinyl-streams', function () {
             var files = {served: [file], included: [file]};
 
             var pipeline = pipelineFactory(basePath, mocks.logger, configs.countAndAppend);
-            pipeline(files, [], []).then(function () {
+            pipeline(files, [], []).then(function (processedFiles) {
                 expect(configs.countAndAppend.count).to.equal(1);
-                expect(files).to.have.pipelineResult([
+                expect(processedFiles).to.have.pipelineResult([
                     {path: '/base/sample.js', content: 'contents appended'}
                 ]);
                 done();
@@ -129,8 +129,8 @@ describe('karma-vinyl-streams', function () {
             var files = {served: [file1, file2, file3], included: [file1, file2, file3]};
 
             var pipeline = pipelineFactory(basePath, mocks.logger, configs.replaceOddFiles);
-            pipeline(files, [], []).then(function () {
-                expect(files).to.have.pipelineResult([
+            pipeline(files, [], []).then(function (processedFiles) {
+                expect(processedFiles).to.have.pipelineResult([
                     {path: '/base/replaced-file-1.js', content: 'content 1'},
                     {path: '/base/file2.js', content: 'file2'},
                     {path: '/base/replaced-file-3.js', content: 'content 3'},
@@ -147,8 +147,8 @@ describe('karma-vinyl-streams', function () {
             var files = {served: [file1, file2, file3], included: [file1, file2, file3]};
 
             var pipeline = pipelineFactory(basePath, mocks.logger, configs.omitAllAfterFirst);
-            pipeline(files, [], []).then(function () {
-                expect(files).to.have.pipelineResult([
+            pipeline(files, [], []).then(function (processedFiles) {
+                expect(processedFiles).to.have.pipelineResult([
                     {path: '/base/file1.js', content: 'file1'}
                 ]);
                 done();
@@ -163,8 +163,8 @@ describe('karma-vinyl-streams', function () {
             var files = {served: [file1, file2, file3, file4], included: [file1, file2, file3, file4]};
 
             var pipeline = pipelineFactory(basePath, mocks.logger, configs.appendToSubdirJs);
-            pipeline(files, [], []).then(function () {
-                expect(files).to.have.pipelineResult([
+            pipeline(files, [], []).then(function (processedFiles) {
+                expect(processedFiles).to.have.pipelineResult([
                     {path: '/base/file1.js', content: 'file1'},
                     {path: '/base/subdir/file2.js', content: 'file2 appended'},
                     {path: '/base/subdir/file3.html', content: 'file3'},
@@ -182,8 +182,8 @@ describe('karma-vinyl-streams', function () {
             var files = {served: [file1, file2, file3, file4], included: [file1, file2, file3, file4]};
 
             var pipeline = pipelineFactory(basePath, mocks.logger, configs.appendToJsAndHtml);
-            pipeline(files, [], []).then(function () {
-                expect(files).to.have.pipelineResult([
+            pipeline(files, [], []).then(function (processedFiles) {
+                expect(processedFiles).to.have.pipelineResult([
                     {path: '/base/file1.js', content: 'file1 appended'},
                     {path: '/base/file2.css', content: 'file2'},
                     {path: '/base/file3.html', content: 'file3 appended'},
@@ -199,8 +199,8 @@ describe('karma-vinyl-streams', function () {
 
             var stream = fs.createReadStream(path.join(__dirname, 'external.html'));
             var pipeline = pipelineFactory(basePath, mocks.logger, configs.externalStream(stream));
-            pipeline(files, [], []).then(function () {
-                expect(files).to.have.pipelineResult([
+            pipeline(files, [], []).then(function (processedFiles) {
+                expect(processedFiles).to.have.pipelineResult([
                     {path: '/base/file1.js', content: 'file1'},
                     {path: '/base/external.html', content: 'external file\n'}
                 ]);
@@ -215,9 +215,9 @@ describe('karma-vinyl-streams', function () {
             var files = {served: [file1, file2, file3], included: [file1, file2, file3]};
 
             var pipeline = pipelineFactory(basePath, mocks.logger, configs.appendToModified);
-            pipeline(files, [], []).then(function () {
+            pipeline(files, [], []).then(function (processedFiles) {
                 //expect(configs.appendToModified.count).to.equal(3);
-                expect(files).to.have.pipelineResult([
+                expect(processedFiles).to.have.pipelineResult([
                     {path: '/base/file1.js', content: 'file1 appended'},
                     {path: '/base/subdir/file2.js', content: 'file2 appended'},
                     {path: '/base/file3.html', content: 'file3 appended'}
@@ -235,9 +235,9 @@ describe('karma-vinyl-streams', function () {
             var pipeline = pipelineFactory(basePath, mocks.logger, configs.appendToModified);
             // First (initial) invocation with no files
             pipeline({served: [], included: []}, [], []).then(function () {
-                pipeline(files, [file1.path], [file3.path]).then(function () {
+                pipeline(files, [file1.path], [file3.path]).then(function (processedFiles) {
                     expect(configs.appendToModified.count).to.equal(2);
-                    expect(files).to.have.pipelineResult([
+                    expect(processedFiles).to.have.pipelineResult([
                         {path: '/base/file1.js', content: 'file1 appended'},
                         {path: '/base/subdir/file2.js', content: 'file2'},
                         {path: '/base/file3.html', content: 'file3 appended'}
@@ -254,8 +254,8 @@ describe('karma-vinyl-streams', function () {
             var files = {served: [file1, file2, file3], included: [file1, file2, file3]};
 
             var pipeline = pipelineFactory(basePath, mocks.logger, configs.overlappingPatterns);
-            pipeline(files, [], []).then(function () {
-                expect(files).to.have.pipelineResult([
+            pipeline(files, [], []).then(function (processedFiles) {
+                expect(processedFiles).to.have.pipelineResult([
                     {path: '/base/file1.notjs', content: 'file1'},
                     {path: '/base/subdir/file2.notjs', content: 'file2 appended'},
                     {path: '/base/subdir/file3.html', content: 'file3 appended'}
@@ -271,9 +271,9 @@ describe('karma-vinyl-streams', function () {
             var pipeline = pipelineFactory(basePath, mocks.logger, function () {
                 throw new Error('Watch out for snakes!');
             });
-            pipeline(files, [], []).then(function () {
+            pipeline(files, [], []).then(function (processedFiles) {
                 expect(mocks.logger.messages[0].join(' ')).to.contain('Watch out for snakes!');
-                expect(files).to.have.pipelineResult([
+                expect(processedFiles).to.have.pipelineResult([
                     {path: '/base/file1.js', content: 'file1'}
                 ]);
                 done();
@@ -285,16 +285,16 @@ describe('karma-vinyl-streams', function () {
             var files = {served: [file], included: [file]};
 
             var pipeline = pipelineFactory(basePath, mocks.logger, configs.errorInStream);
-            pipeline(files, [], []).then(function () {
+            pipeline(files, [], []).then(function (processedFiles) {
                 expect(mocks.logger.messages[0].join(' ')).to.contain('Watch out for snakes!');
-                expect(files).to.have.pipelineResult([
+                expect(processedFiles).to.have.pipelineResult([
                     {path: '/base/file1.js', content: 'file1'}
                 ]);
                 done();
             }).catch(done);
         });
 
-        it('should preserve pathname transformations', function (done) {
+        it('should preserve pathname transformations between streams', function (done) {
             var file1 = createFile('/base/file1.js', 'file1');
             var file2 = createFile('/base/file2.html', 'file2');
             // First and second run use separate objects so only file object references are shared (to mimic Karma)
@@ -303,15 +303,30 @@ describe('karma-vinyl-streams', function () {
 
             var pipeline = pipelineFactory(basePath, mocks.logger, configs.renameModifiedJsFiles);
             // Initial run will rename js (all files are counted as modified)
-            pipeline(firstRunFiles, [], []).then(function () {
+            pipeline(firstRunFiles, [], []).then(function (processedFiles) {
                 // Second run will not pass the js file through the stream, as it's not modified
                pipeline(secondRunFiles, [], ['/base/file2.html']).then(function () {
-                   expect(firstRunFiles).to.have.pipelineResult([
+                   expect(processedFiles).to.have.pipelineResult([
                        {path: '/base/file1.notjs', content: 'file1'},
                        {path: '/base/file2.html', content: 'file2'}
                    ]);
                    done();
                }).catch(done);
+            }).catch(done);
+        });
+
+        it('should not taint Karma\'s file cache used for future invocations', function (done) {
+            var file1 = createFile('/base/file1.js', 'file1');
+            var file2 = createFile('/base/file2.html', 'file2');
+            var files = {served: [file1, file2], included: [file1, file2]};
+
+            var pipeline = pipelineFactory(basePath, mocks.logger, configs.renameModifiedJsFiles);
+            pipeline(files, [], []).then(function () {
+                expect(files).to.have.pipelineResult([
+                    {path: '/base/file1.js', content: 'file1'},
+                    {path: '/base/file2.html', content: 'file2'}
+                ]);
+                done();
             }).catch(done);
         });
     });

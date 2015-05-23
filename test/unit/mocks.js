@@ -68,8 +68,8 @@ function createPipeline() {
         pipeline.changed = changed;
         return deferred.promise;
     };
-    pipeline.flush = function () {
-        deferred.resolve();
+    pipeline.flush = function (processedFiles) {
+        deferred.resolve(processedFiles);
     };
     return pipeline;
 }
